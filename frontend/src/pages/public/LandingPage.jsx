@@ -1,24 +1,20 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useLibrary } from '../../context/LibraryContext';
 import {
   Library,
-  BookOpen,
-  Users,
   ShieldCheck,
-  Zap,
   BarChart3,
   Search,
-  CheckCircle2,
   ChevronDown,
-  ArrowRight,
   Sparkles,
-  QrCode,
   GraduationCap,
 } from 'lucide-react';
 
 export const LandingPage = () => {
   const { switchRole } = useAuth();
+  const { books, issues, students, reservations } = useLibrary();
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState(0);
 
@@ -26,6 +22,10 @@ export const LandingPage = () => {
     switchRole(role);
     navigate(role === 'admin' ? '/admin/dashboard' : '/student/dashboard');
   };
+
+  const totalCopies = books.reduce((acc, b) => acc + b.totalCopies, 0);
+  const activeLoans = issues.filter((i) => i.status === 'issued' || i.status === 'overdue').length;
+  const pendingHolds = reservations.filter((r) => r.status === 'pending').length;
 
   const faqs = [
     {
@@ -52,7 +52,7 @@ export const LandingPage = () => {
       <section className="pt-16 pb-12 px-4 sm:px-8 max-w-7xl mx-auto text-center relative overflow-hidden">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 border border-brand-200 text-brand-700 text-xs font-semibold mb-6">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>Next-Generation Academic Library OS • v2.4</span>
+          <span>Next-Generation Academic Library OS • Ready for Backend Integration</span>
         </div>
 
         <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight max-w-4xl mx-auto">
@@ -60,7 +60,7 @@ export const LandingPage = () => {
         </h1>
 
         <p className="mt-6 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-          Streamline circulation, automate book indexing, manage fines, and empower thousands of students and faculty with lightning-fast catalog discovery.
+          Streamline circulation, automate book indexing, manage fines, and empower students and faculty with lightning-fast catalog discovery.
         </p>
 
         {/* Demo Action Buttons */}
@@ -70,7 +70,7 @@ export const LandingPage = () => {
             className="w-full sm:w-auto px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2"
           >
             <GraduationCap className="w-4 h-4" />
-            <span>Launch Student Portal Demo</span>
+            <span>Launch Student Portal</span>
           </button>
 
           <button
@@ -78,7 +78,7 @@ export const LandingPage = () => {
             className="w-full sm:w-auto px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2"
           >
             <ShieldCheck className="w-4 h-4 text-amber-400" />
-            <span>Launch Librarian Admin Demo</span>
+            <span>Launch Librarian Admin</span>
           </button>
         </div>
 
@@ -91,29 +91,29 @@ export const LandingPage = () => {
               <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
               <span className="ml-2 text-slate-400">athena.university.edu/admin/dashboard</span>
             </div>
-            <span className="text-slate-500">Live Production Preview</span>
+            <span className="text-slate-500">Live System Status</span>
           </div>
 
           <div className="p-6 bg-slate-50 grid grid-cols-1 md:grid-cols-4 gap-4 text-left">
             <div className="bg-white p-4 rounded-xl border border-slate-200">
-              <p className="text-xs text-slate-500 font-semibold uppercase">Total Catalog Titles</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">14,820</p>
-              <span className="text-[11px] text-emerald-600 font-medium">↑ +140 new this month</span>
+              <p className="text-xs text-slate-500 font-semibold uppercase">Total Catalog Copies</p>
+              <p className="text-2xl font-bold text-slate-900 mt-1">{totalCopies}</p>
+              <span className="text-[11px] text-emerald-600 font-medium">Live inventory count</span>
             </div>
             <div className="bg-white p-4 rounded-xl border border-slate-200">
               <p className="text-xs text-slate-500 font-semibold uppercase">Active Issued Books</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">842</p>
-              <span className="text-[11px] text-brand-600 font-medium">96% returned on time</span>
+              <p className="text-2xl font-bold text-slate-900 mt-1">{activeLoans}</p>
+              <span className="text-[11px] text-brand-600 font-medium">Currently on loan</span>
             </div>
             <div className="bg-white p-4 rounded-xl border border-slate-200">
               <p className="text-xs text-slate-500 font-semibold uppercase">Enrolled Students</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">3,850</p>
-              <span className="text-[11px] text-slate-500 font-medium">Across 12 departments</span>
+              <p className="text-2xl font-bold text-slate-900 mt-1">{students.length}</p>
+              <span className="text-[11px] text-slate-500 font-medium">Registered accounts</span>
             </div>
             <div className="bg-white p-4 rounded-xl border border-slate-200">
               <p className="text-xs text-slate-500 font-semibold uppercase">Pending Reservations</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">18</p>
-              <span className="text-[11px] text-amber-600 font-medium">1-day avg clearance</span>
+              <p className="text-2xl font-bold text-slate-900 mt-1">{pendingHolds}</p>
+              <span className="text-[11px] text-amber-600 font-medium">Active queue hold</span>
             </div>
           </div>
         </div>
@@ -157,95 +157,8 @@ export const LandingPage = () => {
             </div>
             <h3 className="text-base font-bold text-slate-900">Real-Time Analytics</h3>
             <p className="mt-2 text-xs text-slate-600 leading-relaxed">
-              Track circulation metrics, peak borrowing hours, popular literature categories, and fine collections with interactive charts.
+              Track circulation metrics, peak borrowing hours, literature categories, and fine collections with interactive charts.
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* How it Works Step-by-Step */}
-      <section className="bg-slate-900 text-white py-16 px-4 sm:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <span className="text-xs font-bold text-brand-400 uppercase tracking-widest">Workflow</span>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mt-1">Simple 3-step circulation lifecycle</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div className="p-6 rounded-xl bg-slate-800/60 border border-slate-700/60">
-              <div className="w-10 h-10 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center mx-auto mb-4 text-sm">
-                1
-              </div>
-              <h3 className="font-bold text-sm text-slate-100">Search & Reserve</h3>
-              <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                Students search the digital catalog, view rack locations, or place a hold reservation on unavailable titles.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-slate-800/60 border border-slate-700/60">
-              <div className="w-10 h-10 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center mx-auto mb-4 text-sm">
-                2
-              </div>
-              <h3 className="font-bold text-sm text-slate-100">Issue at Desk</h3>
-              <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                Librarians scan student cards or verify student IDs to issue books with automatically computed due dates.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-slate-800/60 border border-slate-700/60">
-              <div className="w-10 h-10 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center mx-auto mb-4 text-sm">
-                3
-              </div>
-              <h3 className="font-bold text-sm text-slate-100">Return & Audit</h3>
-              <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                Books are returned with instant copy availability restoration, condition audits, and zero-headache fine clearance.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-            Trusted by leading university librarians
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-6 bg-white rounded-xl border border-slate-200 shadow-xs">
-            <p className="text-xs text-slate-600 leading-relaxed italic">
-              "Athena LMS cut our desk circulation bottleneck by 70%. The clean table views, fast barcode search, and instant reservation approval queue make daily library ops effortless."
-            </p>
-            <div className="mt-4 flex items-center gap-3">
-              <img
-                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=250"
-                alt="Head Librarian"
-                className="w-10 h-10 rounded-full object-cover"
-              />
-              <div>
-                <p className="text-xs font-bold text-slate-900">Dr. Eleanor Vance</p>
-                <p className="text-[11px] text-slate-500">Chief Librarian, University Central Library</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-6 bg-white rounded-xl border border-slate-200 shadow-xs">
-            <p className="text-xs text-slate-600 leading-relaxed italic">
-              "Being able to check due dates on my phone, request renewals, and search algorithms textbooks in seconds is a game changer for students during finals week."
-            </p>
-            <div className="mt-4 flex items-center gap-3">
-              <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250"
-                alt="Student"
-                className="w-10 h-10 rounded-full object-cover"
-              />
-              <div>
-                <p className="text-xs font-bold text-slate-900">Alexander Wright</p>
-                <p className="text-[11px] text-slate-500">Senior CS Student & Guild President</p>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -274,30 +187,6 @@ export const LandingPage = () => {
               )}
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* Bottom CTA */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8">
-        <div className="bg-gradient-to-r from-brand-600 to-brand-800 text-white rounded-2xl p-8 sm:p-12 text-center shadow-lg">
-          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight">Ready to test the interactive portal?</h2>
-          <p className="text-xs sm:text-sm text-brand-100 mt-3 max-w-xl mx-auto">
-            Choose a demo account below to experience full Student or Librarian workflows in real-time.
-          </p>
-          <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={() => handleQuickDemo('student')}
-              className="px-5 py-2.5 bg-white text-brand-900 font-bold text-xs rounded-lg hover:bg-brand-50 transition-colors shadow-xs"
-            >
-              Sign In as Student
-            </button>
-            <button
-              onClick={() => handleQuickDemo('admin')}
-              className="px-5 py-2.5 bg-slate-900 text-white font-bold text-xs rounded-lg hover:bg-slate-800 transition-colors shadow-xs"
-            >
-              Sign In as Librarian
-            </button>
-          </div>
         </div>
       </section>
     </div>

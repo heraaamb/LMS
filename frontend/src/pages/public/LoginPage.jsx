@@ -8,15 +8,15 @@ export const LoginPage = () => {
   const navigate = useNavigate();
 
   const [selectedRole, setSelectedRole] = useState('student');
-  const [email, setEmail] = useState('alex.wright@university.edu');
+  const [email, setEmail] = useState('student@university.edu');
   const [password, setPassword] = useState('••••••••••••');
 
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
     if (role === 'admin') {
-      setEmail('eleanor.vance@university.edu');
+      setEmail('admin@university.edu');
     } else {
-      setEmail('alex.wright@university.edu');
+      setEmail('student@university.edu');
     }
   };
 
@@ -113,10 +113,6 @@ export const LoginPage = () => {
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
-
-        <div className="mt-6 pt-4 border-t border-slate-100 text-center text-xs text-slate-500">
-          <p>Demo accounts pre-configured for instant evaluation.</p>
-        </div>
       </div>
     </div>
   );

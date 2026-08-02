@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   MOCK_BOOKS,
   MOCK_CATEGORIES,
@@ -16,18 +16,40 @@ import {
 const LibraryContext = createContext(null);
 
 export const LibraryProvider = ({ children }) => {
-  const [books, setBooks] = useState(MOCK_BOOKS);
-  const [categories, setCategories] = useState(MOCK_CATEGORIES);
-  const [authors, setAuthors] = useState(MOCK_AUTHORS);
-  const [publishers, setPublishers] = useState(MOCK_PUBLISHERS);
-  const [issues, setIssues] = useState(MOCK_ISSUES);
-  const [reservations, setReservations] = useState(MOCK_RESERVATIONS);
-  const [fines, setFines] = useState(MOCK_FINES);
-  const [students, setStudents] = useState(MOCK_STUDENTS_LIST);
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
-  const [activityLogs, setActivityLogs] = useState(MOCK_ACTIVITY_LOGS);
+  // Helper to initialize from localStorage or fallback
+  const loadInitial = (key, fallback) => {
+    try {
+      const saved = localStorage.getItem(`lms_${key}`);
+      return saved ? JSON.parse(saved) : fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
+  const [books, setBooks] = useState(() => loadInitial('books', MOCK_BOOKS));
+  const [categories, setCategories] = useState(() => loadInitial('categories', MOCK_CATEGORIES));
+  const [authors, setAuthors] = useState(() => loadInitial('authors', MOCK_AUTHORS));
+  const [publishers, setPublishers] = useState(() => loadInitial('publishers', MOCK_PUBLISHERS));
+  const [issues, setIssues] = useState(() => loadInitial('issues', MOCK_ISSUES));
+  const [reservations, setReservations] = useState(() => loadInitial('reservations', MOCK_RESERVATIONS));
+  const [fines, setFines] = useState(() => loadInitial('fines', MOCK_FINES));
+  const [students, setStudents] = useState(() => loadInitial('students', MOCK_STUDENTS_LIST));
+  const [notifications, setNotifications] = useState(() => loadInitial('notifications', MOCK_NOTIFICATIONS));
+  const [activityLogs, setActivityLogs] = useState(() => loadInitial('activityLogs', MOCK_ACTIVITY_LOGS));
   const [analytics] = useState(MOCK_ANALYTICS);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+
+  // Sync to localStorage
+  useEffect(() => { localStorage.setItem('lms_books', JSON.stringify(books)); }, [books]);
+  useEffect(() => { localStorage.setItem('lms_categories', JSON.stringify(categories)); }, [categories]);
+  useEffect(() => { localStorage.setItem('lms_authors', JSON.stringify(authors)); }, [authors]);
+  useEffect(() => { localStorage.setItem('lms_publishers', JSON.stringify(publishers)); }, [publishers]);
+  useEffect(() => { localStorage.setItem('lms_issues', JSON.stringify(issues)); }, [issues]);
+  useEffect(() => { localStorage.setItem('lms_reservations', JSON.stringify(reservations)); }, [reservations]);
+  useEffect(() => { localStorage.setItem('lms_fines', JSON.stringify(fines)); }, [fines]);
+  useEffect(() => { localStorage.setItem('lms_students', JSON.stringify(students)); }, [students]);
+  useEffect(() => { localStorage.setItem('lms_notifications', JSON.stringify(notifications)); }, [notifications]);
+  useEffect(() => { localStorage.setItem('lms_activityLogs', JSON.stringify(activityLogs)); }, [activityLogs]);
 
   // Activity Logger helper
   const logActivity = (actor, actorRole, action, target, details) => {
@@ -64,11 +86,11 @@ export const LibraryProvider = ({ children }) => {
       coverImage: bookData.coverImage || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=400',
       ...bookData,
       totalCopies: parseInt(bookData.totalCopies || 1, 10),
-      publishYear: parseInt(bookData.publishYear || 2024, 10),
+      publishYear: parseInt(bookData.publishYear || new Date().getFullYear(), 10),
       pages: parseInt(bookData.pages || 300, 10),
     };
     setBooks((prev) => [newBook, ...prev]);
-    logActivity('Dr. Eleanor Vance', 'admin', 'BOOK_ADDED', newBook.title, `Added ISBN ${newBook.isbn}`);
+    logActivity('Librarian Admin', 'admin', 'BOOK_ADDED', newBook.title, `Added ISBN ${newBook.isbn}`);
     showToast(`Book "${newBook.title}" added to inventory successfully!`);
     return newBook;
   };
@@ -77,7 +99,7 @@ export const LibraryProvider = ({ children }) => {
     setBooks((prev) =>
       prev.map((b) => (b.id === id ? { ...b, ...updatedFields } : b))
     );
-    logActivity('Dr. Eleanor Vance', 'admin', 'BOOK_UPDATED', id, `Updated fields on book record.`);
+    logActivity('Librarian Admin', 'admin', 'BOOK_UPDATED', id, `Updated fields on book record.`);
     showToast('Book updated successfully!');
   };
 
@@ -85,7 +107,7 @@ export const LibraryProvider = ({ children }) => {
     const targetBook = books.find((b) => b.id === id);
     setBooks((prev) => prev.filter((b) => b.id !== id));
     if (targetBook) {
-      logActivity('Dr. Eleanor Vance', 'admin', 'BOOK_DELETED', targetBook.title, `Removed book from system.`);
+      logActivity('Librarian Admin', 'admin', 'BOOK_DELETED', targetBook.title, `Removed book from system.`);
       showToast(`Book "${targetBook.title}" removed.`, 'warning');
     }
   };
@@ -111,10 +133,9 @@ export const LibraryProvider = ({ children }) => {
       return false;
     }
 
-    if (!targetStudent) {
-      showToast('Student record not found.', 'error');
-      return false;
-    }
+    const studentName = targetStudent?.name || 'Student User';
+    const studentEmail = targetStudent?.email || 'student@university.edu';
+    const sId = targetStudent?.id || studentId;
 
     const newIssue = {
       id: `iss_${Date.now()}`,
@@ -122,20 +143,19 @@ export const LibraryProvider = ({ children }) => {
       bookTitle: targetBook.title,
       isbn: targetBook.isbn,
       coverImage: targetBook.coverImage,
-      studentId: targetStudent.id,
-      studentName: targetStudent.name,
-      studentEmail: targetStudent.email,
+      studentId: sId,
+      studentName,
+      studentEmail,
       issueDate: new Date().toISOString().split('T')[0],
       dueDate: dueDateStr || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       status: 'issued',
-      issuedBy: 'Dr. Eleanor Vance',
+      issuedBy: 'Librarian Admin',
       fineAmount: 0,
       renewedCount: 0,
     };
 
     setIssues((prev) => [newIssue, ...prev]);
 
-    // Update book inventory count
     setBooks((prev) =>
       prev.map((b) =>
         b.id === bookId
@@ -148,17 +168,18 @@ export const LibraryProvider = ({ children }) => {
       )
     );
 
-    // Update student active issues count
-    setStudents((prev) =>
-      prev.map((s) =>
-        s.id === targetStudent.id
-          ? { ...s, activeIssuesCount: s.activeIssuesCount + 1 }
-          : s
-      )
-    );
+    if (targetStudent) {
+      setStudents((prev) =>
+        prev.map((s) =>
+          s.id === targetStudent.id
+            ? { ...s, activeIssuesCount: s.activeIssuesCount + 1 }
+            : s
+        )
+      );
+    }
 
-    logActivity('Dr. Eleanor Vance', 'admin', 'BOOK_ISSUED', targetBook.title, `Issued to ${targetStudent.name}`);
-    showToast(`Successfully issued "${targetBook.title}" to ${targetStudent.name}.`);
+    logActivity('Librarian Admin', 'admin', 'BOOK_ISSUED', targetBook.title, `Issued to ${studentName}`);
+    showToast(`Successfully issued "${targetBook.title}" to ${studentName}.`);
     return true;
   };
 
@@ -179,7 +200,6 @@ export const LibraryProvider = ({ children }) => {
       )
     );
 
-    // Restore book count
     setBooks((prev) =>
       prev.map((b) =>
         b.id === targetIssue.bookId
@@ -192,7 +212,6 @@ export const LibraryProvider = ({ children }) => {
       )
     );
 
-    // Decrement student active issues
     setStudents((prev) =>
       prev.map((s) =>
         s.id === targetIssue.studentId
@@ -201,11 +220,11 @@ export const LibraryProvider = ({ children }) => {
       )
     );
 
-    logActivity('Dr. Eleanor Vance', 'admin', 'BOOK_RETURNED', targetIssue.bookTitle, `Returned by ${targetIssue.studentName}`);
+    logActivity('Librarian Admin', 'admin', 'BOOK_RETURNED', targetIssue.bookTitle, `Returned by ${targetIssue.studentName}`);
     showToast(`Book "${targetIssue.bookTitle}" successfully returned.`);
   };
 
-  // Reserve Book (Student)
+  // Reserve Book
   const reserveBook = (bookId, studentId, studentName, studentEmail) => {
     const targetBook = books.find((b) => b.id === bookId);
     if (!targetBook) return;
@@ -215,9 +234,9 @@ export const LibraryProvider = ({ children }) => {
       bookId: targetBook.id,
       bookTitle: targetBook.title,
       coverImage: targetBook.coverImage,
-      studentId: studentId || 'std_1084',
-      studentName: studentName || 'Alexander Wright',
-      studentEmail: studentEmail || 'alex.wright@university.edu',
+      studentId: studentId || 'std_001',
+      studentName: studentName || 'Student User',
+      studentEmail: studentEmail || 'student@university.edu',
       requestDate: new Date().toISOString().split('T')[0],
       status: 'pending',
       queuePosition: reservations.filter((r) => r.bookId === bookId && r.status === 'pending').length + 1,
@@ -232,7 +251,7 @@ export const LibraryProvider = ({ children }) => {
       )
     );
 
-    logActivity(studentName || 'Alexander Wright', 'student', 'RESERVATION_CREATED', targetBook.title, 'Placed on queue');
+    logActivity(studentName || 'Student User', 'student', 'RESERVATION_CREATED', targetBook.title, 'Placed on queue');
     showToast(`Reservation request for "${targetBook.title}" submitted.`);
   };
 
@@ -262,7 +281,7 @@ export const LibraryProvider = ({ children }) => {
     showToast('Fine waived by librarian.');
   };
 
-  // Notification actions
+  // Notifications
   const markNotificationRead = (id) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))

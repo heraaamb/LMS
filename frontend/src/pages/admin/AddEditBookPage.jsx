@@ -14,17 +14,17 @@ export const AddEditBookPage = () => {
   const [formData, setFormData] = useState({
     title: '',
     isbn: '',
-    author: authors[0]?.name || 'Robert C. Martin',
-    publisher: publishers[0]?.name || 'Prentice Hall',
-    category: categories[0]?.name || 'Computer Science & Software',
-    totalCopies: 5,
+    author: '',
+    publisher: '',
+    category: '',
+    totalCopies: 1,
     rackNumber: 'RACK-A-01',
     shelfNumber: 'SHELF-01',
-    publishYear: 2024,
+    publishYear: new Date().getFullYear(),
     edition: '1st Edition',
     description: '',
     coverImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=400',
-    tags: 'Software, Reference',
+    tags: 'General',
   });
 
   useEffect(() => {
@@ -35,17 +35,24 @@ export const AddEditBookPage = () => {
         author: existingBook.author || '',
         publisher: existingBook.publisher || '',
         category: existingBook.category || '',
-        totalCopies: existingBook.totalCopies || 5,
+        totalCopies: existingBook.totalCopies || 1,
         rackNumber: existingBook.rackNumber || 'RACK-A-01',
         shelfNumber: existingBook.shelfNumber || 'SHELF-01',
-        publishYear: existingBook.publishYear || 2024,
+        publishYear: existingBook.publishYear || new Date().getFullYear(),
         edition: existingBook.edition || '1st Edition',
         description: existingBook.description || '',
         coverImage: existingBook.coverImage || '',
         tags: Array.isArray(existingBook.tags) ? existingBook.tags.join(', ') : '',
       });
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        category: prev.category || categories[0]?.name || '',
+        author: prev.author || authors[0]?.name || '',
+        publisher: prev.publisher || publishers[0]?.name || '',
+      }));
     }
-  }, [existingBook]);
+  }, [existingBook, categories, authors, publishers]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -109,50 +116,89 @@ export const AddEditBookPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">Category *</label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="w-full px-3 py-2 text-xs sm:text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-brand-500 focus:outline-none"
-            >
-              {categories.map((c) => (
-                <option key={c.id} value={c.name}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            {categories.length > 0 ? (
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                className="w-full px-3 py-2 text-xs sm:text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-brand-500 focus:outline-none"
+              >
+                <option value="">Select Category</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                name="category"
+                required
+                value={formData.category}
+                onChange={handleChange}
+                placeholder="Category name"
+                className="w-full px-3 py-2 text-xs sm:text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none"
+              />
+            )}
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">Author *</label>
-            <select
-              name="author"
-              value={formData.author}
-              onChange={handleChange}
-              className="w-full px-3 py-2 text-xs sm:text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-brand-500 focus:outline-none"
-            >
-              {authors.map((a) => (
-                <option key={a.id} value={a.name}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
+            {authors.length > 0 ? (
+              <select
+                name="author"
+                value={formData.author}
+                onChange={handleChange}
+                className="w-full px-3 py-2 text-xs sm:text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-brand-500 focus:outline-none"
+              >
+                <option value="">Select Author</option>
+                {authors.map((a) => (
+                  <option key={a.id} value={a.name}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                name="author"
+                required
+                value={formData.author}
+                onChange={handleChange}
+                placeholder="Author name"
+                className="w-full px-3 py-2 text-xs sm:text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none"
+              />
+            )}
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">Publisher *</label>
-            <select
-              name="publisher"
-              value={formData.publisher}
-              onChange={handleChange}
-              className="w-full px-3 py-2 text-xs sm:text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-brand-500 focus:outline-none"
-            >
-              {publishers.map((p) => (
-                <option key={p.id} value={p.name}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+            {publishers.length > 0 ? (
+              <select
+                name="publisher"
+                value={formData.publisher}
+                onChange={handleChange}
+                className="w-full px-3 py-2 text-xs sm:text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-brand-500 focus:outline-none"
+              >
+                <option value="">Select Publisher</option>
+                {publishers.map((p) => (
+                  <option key={p.id} value={p.name}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                name="publisher"
+                required
+                value={formData.publisher}
+                onChange={handleChange}
+                placeholder="Publisher name"
+                className="w-full px-3 py-2 text-xs sm:text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none"
+              />
+            )}
           </div>
         </div>
 
@@ -207,6 +253,7 @@ export const AddEditBookPage = () => {
             name="coverImage"
             value={formData.coverImage}
             onChange={handleChange}
+            placeholder="https://..."
             className="w-full px-3 py-2 text-xs sm:text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none"
           />
         </div>

@@ -11,14 +11,14 @@ export const BookFormModal = ({ isOpen, onClose, initialData = null }) => {
     author: '',
     publisher: '',
     category: '',
-    totalCopies: 5,
+    totalCopies: 1,
     rackNumber: 'RACK-A-01',
     shelfNumber: 'SHELF-01',
-    publishYear: 2023,
+    publishYear: new Date().getFullYear(),
     edition: '1st Edition',
     description: '',
     coverImage: '',
-    tags: 'Computer Science, Reference',
+    tags: '',
   });
 
   useEffect(() => {
@@ -29,10 +29,10 @@ export const BookFormModal = ({ isOpen, onClose, initialData = null }) => {
         author: initialData.author || '',
         publisher: initialData.publisher || '',
         category: initialData.category || '',
-        totalCopies: initialData.totalCopies || 5,
+        totalCopies: initialData.totalCopies || 1,
         rackNumber: initialData.rackNumber || 'RACK-A-01',
         shelfNumber: initialData.shelfNumber || 'SHELF-01',
-        publishYear: initialData.publishYear || 2023,
+        publishYear: initialData.publishYear || new Date().getFullYear(),
         edition: initialData.edition || '1st Edition',
         description: initialData.description || '',
         coverImage: initialData.coverImage || '',
@@ -42,17 +42,17 @@ export const BookFormModal = ({ isOpen, onClose, initialData = null }) => {
       setFormData({
         title: '',
         isbn: '',
-        author: authors[0]?.name || 'Robert C. Martin',
-        publisher: publishers[0]?.name || 'Prentice Hall',
-        category: categories[0]?.name || 'Computer Science & Software',
-        totalCopies: 5,
+        author: authors[0]?.name || '',
+        publisher: publishers[0]?.name || '',
+        category: categories[0]?.name || '',
+        totalCopies: 1,
         rackNumber: 'RACK-A-01',
         shelfNumber: 'SHELF-01',
-        publishYear: 2024,
+        publishYear: new Date().getFullYear(),
         edition: '1st Edition',
         description: '',
         coverImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=400',
-        tags: 'Computer Science, Reference',
+        tags: 'General',
       });
     }
   }, [initialData, isOpen, categories, authors, publishers]);
@@ -90,7 +90,7 @@ export const BookFormModal = ({ isOpen, onClose, initialData = null }) => {
               value={formData.title}
               onChange={handleChange}
               placeholder="e.g. Clean Code"
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none text-slate-900"
             />
           </div>
           <div>
@@ -102,7 +102,7 @@ export const BookFormModal = ({ isOpen, onClose, initialData = null }) => {
               value={formData.isbn}
               onChange={handleChange}
               placeholder="978-0132350884"
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono text-slate-900"
             />
           </div>
         </div>
@@ -110,50 +110,89 @@ export const BookFormModal = ({ isOpen, onClose, initialData = null }) => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className="block font-semibold text-slate-700 mb-1">Category *</label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none bg-white"
-            >
-              {categories.map((c) => (
-                <option key={c.id} value={c.name}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            {categories.length > 0 ? (
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none bg-white text-slate-900"
+              >
+                <option value="">Select Category</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                name="category"
+                required
+                value={formData.category}
+                onChange={handleChange}
+                placeholder="Category name"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none text-slate-900"
+              />
+            )}
           </div>
 
           <div>
             <label className="block font-semibold text-slate-700 mb-1">Author *</label>
-            <select
-              name="author"
-              value={formData.author}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none bg-white"
-            >
-              {authors.map((a) => (
-                <option key={a.id} value={a.name}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
+            {authors.length > 0 ? (
+              <select
+                name="author"
+                value={formData.author}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none bg-white text-slate-900"
+              >
+                <option value="">Select Author</option>
+                {authors.map((a) => (
+                  <option key={a.id} value={a.name}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                name="author"
+                required
+                value={formData.author}
+                onChange={handleChange}
+                placeholder="Author name"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none text-slate-900"
+              />
+            )}
           </div>
 
           <div>
             <label className="block font-semibold text-slate-700 mb-1">Publisher *</label>
-            <select
-              name="publisher"
-              value={formData.publisher}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none bg-white"
-            >
-              {publishers.map((p) => (
-                <option key={p.id} value={p.name}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+            {publishers.length > 0 ? (
+              <select
+                name="publisher"
+                value={formData.publisher}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none bg-white text-slate-900"
+              >
+                <option value="">Select Publisher</option>
+                {publishers.map((p) => (
+                  <option key={p.id} value={p.name}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                name="publisher"
+                required
+                value={formData.publisher}
+                onChange={handleChange}
+                placeholder="Publisher name"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none text-slate-900"
+              />
+            )}
           </div>
         </div>
 
@@ -166,7 +205,7 @@ export const BookFormModal = ({ isOpen, onClose, initialData = null }) => {
               min="1"
               value={formData.totalCopies}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none text-slate-900"
             />
           </div>
           <div>
@@ -176,7 +215,7 @@ export const BookFormModal = ({ isOpen, onClose, initialData = null }) => {
               name="rackNumber"
               value={formData.rackNumber}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none text-slate-900"
             />
           </div>
           <div>
@@ -186,7 +225,7 @@ export const BookFormModal = ({ isOpen, onClose, initialData = null }) => {
               name="publishYear"
               value={formData.publishYear}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none text-slate-900"
             />
           </div>
           <div>
@@ -196,7 +235,7 @@ export const BookFormModal = ({ isOpen, onClose, initialData = null }) => {
               name="edition"
               value={formData.edition}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none text-slate-900"
             />
           </div>
         </div>
@@ -208,8 +247,8 @@ export const BookFormModal = ({ isOpen, onClose, initialData = null }) => {
             name="coverImage"
             value={formData.coverImage}
             onChange={handleChange}
-            placeholder="https://images.unsplash.com/..."
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none"
+            placeholder="https://..."
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none text-slate-900"
           />
         </div>
 
@@ -221,7 +260,7 @@ export const BookFormModal = ({ isOpen, onClose, initialData = null }) => {
             value={formData.description}
             onChange={handleChange}
             placeholder="Detailed book description..."
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none"
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none text-slate-900"
           ></textarea>
         </div>
 
