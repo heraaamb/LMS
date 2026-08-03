@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { User as UserIcon, Settings, LogOut, ArrowRightLeft, ShieldCheck, GraduationCap } from 'lucide-react';
+import { User as UserIcon, Settings, LogOut, ShieldCheck, GraduationCap, CreditCard } from 'lucide-react';
 
 export const ProfileDropdown = () => {
-  const { user, role, switchRole, logout } = useAuth();
+  const { user, role, logout } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -18,13 +18,6 @@ export const ProfileDropdown = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const handleRoleToggle = () => {
-    const targetRole = role === 'admin' ? 'student' : 'admin';
-    switchRole(targetRole);
-    setIsOpen(false);
-    navigate(targetRole === 'admin' ? '/admin/dashboard' : '/student/dashboard');
-  };
 
   const handleLogout = () => {
     logout();
@@ -45,7 +38,9 @@ export const ProfileDropdown = () => {
         />
         <div className="hidden md:block text-left">
           <p className="text-xs font-semibold text-slate-800 leading-tight">{user?.name}</p>
-          <p className="text-[11px] text-slate-500 capitalize">{role === 'admin' ? 'Librarian' : 'Student'}</p>
+          <p className="text-[11px] text-slate-500 font-mono">
+            {role === 'admin' ? user?.teacherId || 'Teacher' : user?.studentId || 'Student'}
+          </p>
         </div>
       </button>
 
@@ -56,24 +51,11 @@ export const ProfileDropdown = () => {
             <p className="text-xs font-semibold text-slate-900">{user?.name}</p>
             <p className="text-xs text-slate-500 truncate">{user?.email}</p>
             <div className="mt-2 flex items-center gap-1.5">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-brand-50 text-brand-700 border border-brand-200 capitalize">
-                <ShieldCheck className="w-3 h-3" />
-                {role === 'admin' ? 'Librarian / Admin' : 'Student Account'}
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-brand-50 text-brand-700 border border-brand-200 capitalize font-mono">
+                <CreditCard className="w-3 h-3 text-brand-600" />
+                {role === 'admin' ? `Teacher ID: ${user?.teacherId || 'TCH-001'}` : `Student ID: ${user?.studentId || 'STU-001'}`}
               </span>
             </div>
-          </div>
-
-          {/* Quick Role Switcher Button */}
-          <div className="p-2 border-b border-slate-100 bg-slate-50/30">
-            <button
-              onClick={handleRoleToggle}
-              className="w-full flex items-center justify-between px-2.5 py-1.5 text-xs font-medium text-brand-700 bg-brand-50 hover:bg-brand-100/70 border border-brand-200 rounded-lg transition-colors"
-            >
-              <div className="flex items-center gap-2">
-                <ArrowRightLeft className="w-3.5 h-3.5" />
-                <span>Switch to {role === 'admin' ? 'Student' : 'Librarian'} View</span>
-              </div>
-            </button>
           </div>
 
           {/* Menu Items */}

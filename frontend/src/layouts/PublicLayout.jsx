@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
-import { Library, ArrowRight } from 'lucide-react';
+import { Library, ArrowRight, UserPlus } from 'lucide-react';
 import { Toast } from '../components/ui/Toast';
 
 export const PublicLayout = () => {
@@ -21,7 +21,7 @@ export const PublicLayout = () => {
             </div>
           </Link>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <Link
               to="/login"
               className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
@@ -29,11 +29,11 @@ export const PublicLayout = () => {
               Sign In
             </Link>
             <Link
-              to="/login"
+              to="/signup"
               className="px-3.5 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-xs transition-colors flex items-center gap-1.5"
             >
-              <span>Get Started</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>Create Account</span>
             </Link>
           </div>
         </div>

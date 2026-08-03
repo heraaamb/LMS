@@ -10,6 +10,7 @@ import { AdminLayout } from '../layouts/AdminLayout';
 // Public Pages
 import { LandingPage } from '../pages/public/LandingPage';
 import { LoginPage } from '../pages/public/LoginPage';
+import { SignUpPage } from '../pages/public/SignUpPage';
 import { ForgotPasswordPage } from '../pages/public/ForgotPasswordPage';
 import { ResetPasswordPage } from '../pages/public/ResetPasswordPage';
 import { NotFoundPage } from '../pages/public/NotFoundPage';
@@ -51,6 +52,7 @@ export const AppRoutes = () => {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
       </Route>
@@ -75,7 +77,7 @@ export const AppRoutes = () => {
         <Route path="/student/settings" element={<StudentSettingsPage />} />
       </Route>
 
-      {/* LIBRARIAN / ADMIN PROTECTED ROUTES */}
+      {/* LIBRARIAN / TEACHER PROTECTED ROUTES */}
       <Route
         element={
           <ProtectedRoute allowedRole="admin">

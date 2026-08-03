@@ -10,12 +10,11 @@ export const ProtectedRoute = ({ children, allowedRole }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Strict portal enforcement: Students can NEVER access teacher/admin routes
   if (allowedRole && role !== allowedRole) {
-    // If student tries to access admin route, redirect to student dashboard
     if (role === 'student' && allowedRole === 'admin') {
       return <Navigate to="/student/dashboard" replace />;
     }
-    // If admin tries to access student route, redirect to admin dashboard
     if (role === 'admin' && allowedRole === 'student') {
       return <Navigate to="/admin/dashboard" replace />;
     }

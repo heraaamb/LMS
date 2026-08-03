@@ -7,6 +7,7 @@ export interface User {
   role: Role;
   avatar: string;
   studentId?: string;
+  teacherId?: string;
   department?: string;
   year?: string;
   phone?: string;
