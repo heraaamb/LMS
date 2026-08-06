@@ -3,7 +3,8 @@ import { sendSuccess } from '../utils/responseHandler.js';
 
 export const getFines = async (req, res, next) => {
   try {
-    return sendSuccess(res, 'Fines fetched', []);
+    const fines = await fineService.getAllFines();
+    return sendSuccess(res, 'Fines fetched', fines);
   } catch (error) {
     next(error);
   }

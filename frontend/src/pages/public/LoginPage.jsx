@@ -22,12 +22,12 @@ export const LoginPage = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
     try {
-      login({ identifier, password, role: selectedRole });
+      await login({ identifier, password, role: selectedRole });
       if (selectedRole === 'admin') {
         navigate('/admin/dashboard');
       } else {

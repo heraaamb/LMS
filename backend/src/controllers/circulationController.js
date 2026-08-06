@@ -21,7 +21,8 @@ export const returnBook = async (req, res, next) => {
 
 export const getIssues = async (req, res, next) => {
   try {
-    return sendSuccess(res, 'Issues retrieved successfully', []);
+    const issues = await circulationService.getAllIssues();
+    return sendSuccess(res, 'Issues retrieved successfully', issues);
   } catch (error) {
     next(error);
   }

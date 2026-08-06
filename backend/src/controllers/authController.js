@@ -3,6 +3,7 @@ import { sendSuccess, sendError } from '../utils/responseHandler.js';
 
 export const register = async (req, res, next) => {
   try {
+    console.log("in controller: ", req.body);
     const { name, email, password, role, idNumber, department } = req.body;
     const result = await authService.register({ name, email, password, role, idNumber, department });
     return sendSuccess(res, 'User registered successfully', result, 201);

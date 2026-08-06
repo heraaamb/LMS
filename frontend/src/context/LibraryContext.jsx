@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { apiService } from '../services/api';
 import {
   MOCK_BOOKS,
   MOCK_CATEGORIES,
@@ -36,10 +37,62 @@ export const LibraryProvider = ({ children }) => {
   const [students, setStudents] = useState(() => loadInitial('students', MOCK_STUDENTS_LIST));
   const [notifications, setNotifications] = useState(() => loadInitial('notifications', MOCK_NOTIFICATIONS));
   const [activityLogs, setActivityLogs] = useState(() => loadInitial('activityLogs', MOCK_ACTIVITY_LOGS));
-  const [analytics] = useState(MOCK_ANALYTICS);
+  const [analytics, setAnalytics] = useState(MOCK_ANALYTICS);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
-  // Sync to localStorage
+  // Sync state to backend APIs on mount
+  useEffect(() => {
+    const fetchBackendData = async () => {
+      try {
+        const booksRes = await apiService.getBooks();
+        if (booksRes?.data && Array.isArray(booksRes.data) && booksRes.data.length > 0) {
+          setBooks(booksRes.data);
+        }
+      } catch (err) {
+        console.warn('[LibraryContext] Failed to fetch books from backend:', err.message);
+      }
+
+      try {
+        const issuesRes = await apiService.getIssues();
+        if (issuesRes?.data && Array.isArray(issuesRes.data) && issuesRes.data.length > 0) {
+          setIssues(issuesRes.data);
+        }
+      } catch (err) {
+        console.warn('[LibraryContext] Failed to fetch issues from backend:', err.message);
+      }
+
+      try {
+        const resRes = await apiService.getReservations();
+        if (resRes?.data && Array.isArray(resRes.data) && resRes.data.length > 0) {
+          setReservations(resRes.data);
+        }
+      } catch (err) {
+        console.warn('[LibraryContext] Failed to fetch reservations from backend:', err.message);
+      }
+
+      try {
+        const finesRes = await apiService.getFines();
+        if (finesRes?.data && Array.isArray(finesRes.data) && finesRes.data.length > 0) {
+          setFines(finesRes.data);
+        }
+      } catch (err) {
+        console.warn('[LibraryContext] Failed to fetch fines from backend:', err.message);
+      }
+
+      try {
+        const studentsRes = await apiService.getStudents();
+        if (studentsRes?.data && Array.isArray(studentsRes.data) && studentsRes.data.length > 0) {
+          setStudents(studentsRes.data);
+        }
+      } catch (err) {
+        console.warn('[LibraryContext] Failed to fetch students from backend:', err.message);
+      }
+    };
+
+    fetchBackendData();
+  }, []);
+
+  // Sync to localStorage as client side fallback cache
   useEffect(() => { localStorage.setItem('lms_books', JSON.stringify(books)); }, [books]);
   useEffect(() => { localStorage.setItem('lms_categories', JSON.stringify(categories)); }, [categories]);
   useEffect(() => { localStorage.setItem('lms_authors', JSON.stringify(authors)); }, [authors]);
@@ -75,8 +128,8 @@ export const LibraryProvider = ({ children }) => {
   };
 
   // Books CRUD
-  const addBook = (bookData) => {
-    const newBook = {
+  const addBook = async (bookData) => {
+    const payload = {
       id: `bk_${Date.now()}`,
       availableCopies: parseInt(bookData.totalCopies || 1, 10),
       borrowedCopies: 0,
@@ -89,13 +142,31 @@ export const LibraryProvider = ({ children }) => {
       publishYear: parseInt(bookData.publishYear || new Date().getFullYear(), 10),
       pages: parseInt(bookData.pages || 300, 10),
     };
-    setBooks((prev) => [newBook, ...prev]);
-    logActivity('Librarian Admin', 'admin', 'BOOK_ADDED', newBook.title, `Added ISBN ${newBook.isbn}`);
-    showToast(`Book "${newBook.title}" added to inventory successfully!`);
-    return newBook;
+
+    try {
+      const res = await apiService.createBook(payload);
+      if (res?.data) {
+        setBooks((prev) => [res.data, ...prev]);
+        logActivity('Librarian Admin', 'admin', 'BOOK_ADDED', res.data.title || payload.title, `Added ISBN ${payload.isbn}`);
+        showToast(`Book "${payload.title}" added successfully!`);
+        return res.data;
+      }
+    } catch (err) {
+      console.warn('[LibraryContext] createBook API call failed or offline:', err.message);
+    }
+
+    setBooks((prev) => [payload, ...prev]);
+    logActivity('Librarian Admin', 'admin', 'BOOK_ADDED', payload.title, `Added ISBN ${payload.isbn}`);
+    showToast(`Book "${payload.title}" added successfully!`);
+    return payload;
   };
 
-  const updateBook = (id, updatedFields) => {
+  const updateBook = async (id, updatedFields) => {
+    try {
+      await apiService.updateBook(id, updatedFields);
+    } catch (err) {
+      console.warn('[LibraryContext] updateBook API call failed:', err.message);
+    }
     setBooks((prev) =>
       prev.map((b) => (b.id === id ? { ...b, ...updatedFields } : b))
     );
@@ -103,8 +174,13 @@ export const LibraryProvider = ({ children }) => {
     showToast('Book updated successfully!');
   };
 
-  const deleteBook = (id) => {
+  const deleteBook = async (id) => {
     const targetBook = books.find((b) => b.id === id);
+    try {
+      await apiService.deleteBook(id);
+    } catch (err) {
+      console.warn('[LibraryContext] deleteBook API call failed:', err.message);
+    }
     setBooks((prev) => prev.filter((b) => b.id !== id));
     if (targetBook) {
       logActivity('Librarian Admin', 'admin', 'BOOK_DELETED', targetBook.title, `Removed book from system.`);
@@ -113,18 +189,23 @@ export const LibraryProvider = ({ children }) => {
   };
 
   // Category Actions
-  const addCategory = (cat) => {
-    const newCat = {
+  const addCategory = async (cat) => {
+    const payload = {
       id: `cat_${Date.now()}`,
       bookCount: 0,
       ...cat,
     };
-    setCategories((prev) => [...prev, newCat]);
+    try {
+      await apiService.createCategory(payload);
+    } catch (err) {
+      console.warn('[LibraryContext] createCategory API call failed:', err.message);
+    }
+    setCategories((prev) => [...prev, payload]);
     showToast(`Category "${cat.name}" added.`);
   };
 
   // Issue Book
-  const issueBookToStudent = (bookId, studentId, dueDateStr) => {
+  const issueBookToStudent = async (bookId, studentId, dueDateStr) => {
     const targetBook = books.find((b) => b.id === bookId);
     const targetStudent = students.find((s) => s.id === studentId || s.studentId === studentId);
 
@@ -136,6 +217,19 @@ export const LibraryProvider = ({ children }) => {
     const studentName = targetStudent?.name || 'Student User';
     const studentEmail = targetStudent?.email || 'student@university.edu';
     const sId = targetStudent?.id || studentId;
+    const dueDate = dueDateStr || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+    const newIssuePayload = {
+      bookId: targetBook.id,
+      studentId: sId,
+      dueDate,
+    };
+
+    try {
+      await apiService.issueBook(newIssuePayload);
+    } catch (err) {
+      console.warn('[LibraryContext] issueBook API call failed:', err.message);
+    }
 
     const newIssue = {
       id: `iss_${Date.now()}`,
@@ -147,7 +241,7 @@ export const LibraryProvider = ({ children }) => {
       studentName,
       studentEmail,
       issueDate: new Date().toISOString().split('T')[0],
-      dueDate: dueDateStr || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      dueDate,
       status: 'issued',
       issuedBy: 'Librarian Admin',
       fineAmount: 0,
@@ -184,9 +278,15 @@ export const LibraryProvider = ({ children }) => {
   };
 
   // Return Book
-  const processReturn = (issueId) => {
+  const processReturn = async (issueId) => {
     const targetIssue = issues.find((i) => i.id === issueId);
     if (!targetIssue) return;
+
+    try {
+      await apiService.returnBook(issueId);
+    } catch (err) {
+      console.warn('[LibraryContext] returnBook API call failed:', err.message);
+    }
 
     setIssues((prev) =>
       prev.map((i) =>
@@ -225,9 +325,20 @@ export const LibraryProvider = ({ children }) => {
   };
 
   // Reserve Book
-  const reserveBook = (bookId, studentId, studentName, studentEmail) => {
+  const reserveBook = async (bookId, studentId, studentName, studentEmail) => {
     const targetBook = books.find((b) => b.id === bookId);
     if (!targetBook) return;
+
+    const payload = {
+      bookId: targetBook.id,
+      studentId: studentId || 'std_001',
+    };
+
+    try {
+      await apiService.createReservation(payload);
+    } catch (err) {
+      console.warn('[LibraryContext] createReservation API call failed:', err.message);
+    }
 
     const newRes = {
       id: `res_${Date.now()}`,
@@ -255,7 +366,12 @@ export const LibraryProvider = ({ children }) => {
     showToast(`Reservation request for "${targetBook.title}" submitted.`);
   };
 
-  const updateReservationStatus = (id, newStatus) => {
+  const updateReservationStatus = async (id, newStatus) => {
+    try {
+      await apiService.updateReservationStatus(id, newStatus);
+    } catch (err) {
+      console.warn('[LibraryContext] updateReservationStatus API call failed:', err.message);
+    }
     setReservations((prev) =>
       prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
     );
@@ -263,7 +379,12 @@ export const LibraryProvider = ({ children }) => {
   };
 
   // Fine Management
-  const payFine = (fineId) => {
+  const payFine = async (fineId) => {
+    try {
+      await apiService.payFine(fineId);
+    } catch (err) {
+      console.warn('[LibraryContext] payFine API call failed:', err.message);
+    }
     setFines((prev) =>
       prev.map((f) =>
         f.id === fineId
@@ -274,7 +395,12 @@ export const LibraryProvider = ({ children }) => {
     showToast('Fine payment processed successfully!');
   };
 
-  const waiveFine = (fineId) => {
+  const waiveFine = async (fineId) => {
+    try {
+      await apiService.waiveFine(fineId);
+    } catch (err) {
+      console.warn('[LibraryContext] waiveFine API call failed:', err.message);
+    }
     setFines((prev) =>
       prev.map((f) => (f.id === fineId ? { ...f, status: 'waived' } : f))
     );

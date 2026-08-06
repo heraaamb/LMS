@@ -34,12 +34,12 @@ export const SignUpPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
     try {
-      signup({
+      await signup({
         name: formData.name,
         email: formData.email,
         password: formData.password,

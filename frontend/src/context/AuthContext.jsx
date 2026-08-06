@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { apiService } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -64,25 +65,36 @@ export const AuthProvider = ({ children }) => {
     } else {
       localStorage.removeItem('lms_current_user');
       localStorage.removeItem('lms_role');
+      localStorage.removeItem('lms_token');
     }
   }, [user]);
 
-  const signup = ({ name, email, password, role, idNumber, department, year, phone }) => {
+  const signup = async ({ name, email, password, role, idNumber, department, year, phone }) => {
     const isStudent = role === 'student';
     
-    // Check if ID or Email already exists
-    const existing = registeredUsers.find(
-      (u) =>
-        u.email.toLowerCase() === email.toLowerCase() ||
-        (isStudent && u.studentId?.toLowerCase() === idNumber.toLowerCase()) ||
-        (!isStudent && u.teacherId?.toLowerCase() === idNumber.toLowerCase())
-    );
-
-    if (existing) {
-      throw new Error(`An account with this ${isStudent ? 'Student ID' : 'Teacher ID'} or Email already exists.`);
+    // Call backend API first
+    let apiResult = null;
+    try {
+      apiResult = await apiService.register({
+        name,
+        email,
+        password,
+        role,
+        idNumber,
+        department,
+        year,
+        phone,
+      });
+      if (apiResult?.data?.token) {
+        localStorage.setItem('lms_token', apiResult.data.token);
+      }
+    } catch (apiErr) {
+      console.warn('[AuthContext] Backend register API call failed or offline:', apiErr.message);
     }
 
-    const newUser = {
+    const backendUser = apiResult?.data?.user;
+
+    const newUser = backendUser || {
       id: `usr_${Date.now()}`,
       name,
       email,
@@ -103,7 +115,25 @@ export const AuthProvider = ({ children }) => {
     return newUser;
   };
 
-  const login = ({ identifier, password, role }) => {
+  const login = async ({ identifier, password, role }) => {
+    let apiResult = null;
+    try {
+      apiResult = await apiService.login({ identifier, password, role });
+      if (apiResult?.data?.token) {
+        localStorage.setItem('lms_token', apiResult.data.token);
+      }
+    } catch (apiErr) {
+      console.warn('[AuthContext] Backend login API call failed or offline:', apiErr.message);
+    }
+
+    const backendUser = apiResult?.data?.user;
+
+    if (backendUser) {
+      setUser(backendUser);
+      return backendUser;
+    }
+
+    // Local fallback matching
     const matched = registeredUsers.find((u) => {
       const matchesIdentifier =
         u.email.toLowerCase() === identifier.toLowerCase() ||

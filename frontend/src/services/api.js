@@ -1,8 +1,5 @@
 /**
- * API Service Abstraction Layer for Library Management System
- * 
- * Replace VITE_API_BASE_URL in .env with your backend server URL
- * (e.g. VITE_API_BASE_URL=http://localhost:8080/api)
+ * API Service Layer for Library Management System
  */
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -35,6 +32,7 @@ async function request(endpoint, options = {}) {
 
 export const apiService = {
   // Auth
+  register: (userData) => request('/auth/register', { method: 'POST', body: JSON.stringify(userData) }),
   login: (credentials) => request('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
   getCurrentUser: () => request('/auth/me'),
 
@@ -76,6 +74,6 @@ export const apiService = {
   getStudentById: (id) => request(`/students/${id}`),
 
   // Analytics & Audit Logs
-  getAnalytics: () => request('/analytics'),
-  getActivityLogs: () => request('/activity-logs'),
+  getAnalytics: () => request('/reports/analytics'),
+  getActivityLogs: () => request('/reports/activity-logs'),
 };
