@@ -77,11 +77,10 @@ export const SignUpPage = () => {
           <button
             type="button"
             onClick={() => handleRoleToggle('student')}
-            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-semibold transition-all ${
-              selectedRole === 'student'
+            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-semibold transition-all ${selectedRole === 'student'
                 ? 'bg-white text-slate-900 shadow-xs'
                 : 'text-slate-500 hover:text-slate-900'
-            }`}
+              }`}
           >
             <GraduationCap className="w-4 h-4 text-brand-600" />
             <span>Student Registration</span>
@@ -89,11 +88,10 @@ export const SignUpPage = () => {
           <button
             type="button"
             onClick={() => handleRoleToggle('admin')}
-            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-semibold transition-all ${
-              selectedRole === 'admin'
+            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-semibold transition-all ${selectedRole === 'admin'
                 ? 'bg-white text-slate-900 shadow-xs'
                 : 'text-slate-500 hover:text-slate-900'
-            }`}
+              }`}
           >
             <ShieldCheck className="w-4 h-4 text-amber-500" />
             <span>Teacher / Librarian</span>
